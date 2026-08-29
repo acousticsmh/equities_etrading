@@ -1,0 +1,1 @@
+"""Research components for the equities e-trading project."""

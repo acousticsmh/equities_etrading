@@ -12,7 +12,7 @@ The first strategy target is a liquidity-providing market maker that quotes both
 - latency between market events, decisions, and orders;
 - fees, rebates, spread costs, and market impact.
 
-This repository is intentionally starting with structure rather than strategy code. Each module has a clear responsibility and can later be implemented and tested independently. The design follows the development sequence in Chapter 8: validate data and book reconstruction first, then add features, signals, realistic execution, risk controls, and backtesting.
+Each module has a clear responsibility and can be implemented and tested independently. The design follows the development sequence in Chapter 8: validate data and book reconstruction first, then add features, signals, realistic execution, risk controls, and backtesting. The first implemented slice is the basket-oriented ingestion pipeline in `research/ingest/`.
 
 ## Research Flow
 
@@ -48,6 +48,8 @@ Responsibilities:
 - normalise data into structures that downstream modules can consume without losing source context.
 
 This module should not compute trading signals or silently repair questionable market data. Data-quality decisions belong in explicit validation and reporting paths.
+
+See [`research/docs/ingestion.md`](research/docs/ingestion.md) for provider setup, API usage, normalized event fields, raw-data layout, and depth/order-level feed guidance.
 
 ### `research/book/`
 
@@ -173,4 +175,4 @@ Lower layers should not import higher-level strategy or reporting code. This kee
 
 ## Current Scope
 
-The current commit establishes the repository layout and research contract only. It intentionally does not claim to connect to a broker, venue, FIX gateway, or live market. Any future live-trading integration must add production-grade controls, operational monitoring, reconciliation, and compliance review beyond this research skeleton.
+The current implementation loads Alpaca historical trades and quotes for a symbol basket, loads depth and order-level captures from local JSONL, JSON, or CSV files, and stores normalized raw events as partitioned JSONL. It intentionally does not claim to connect to a broker, venue, FIX gateway, or live market. Any future live-trading integration must add production-grade controls, operational monitoring, reconciliation, and compliance review beyond this research codebase.

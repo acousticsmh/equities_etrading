@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Raw and generated market data can be large and license-restricted.
+data/raw/
+data/processed/
+
+# Local experiment outputs; keep configurations and summaries under version control.
+research/docs/experiments/*
+!research/docs/experiments/.gitkeep
