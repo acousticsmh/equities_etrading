@@ -51,6 +51,8 @@ This module should not compute trading signals or silently repair questionable m
 
 See [`research/docs/ingestion.md`](research/docs/ingestion.md) for provider setup, API usage, normalized event fields, raw-data layout, and depth/order-level feed guidance.
 
+See [`research/docs/book.md`](research/docs/book.md) for order-book reconstruction ownership, event lifecycle semantics, replay sequencing, validation, and snapshot behavior.
+
 ### `research/book/`
 
 Reconstructs venue-level order-book state from sequenced order events.
