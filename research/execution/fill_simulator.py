@@ -7,6 +7,7 @@ only when the order is at the front of the queue when the trade occurs.
 
 from dataclasses import dataclass
 from decimal import Decimal
+from itertools import islice
 
 from research.book.events import BookEvent
 from research.book.models import Side
@@ -50,21 +51,13 @@ class FillSimulator:
             return None
         if level is None or order_id not in level.orders:
             return None
-        orders_ahead: list[str] = []
-        sequence_position = None
-        for position, queued_order_id in enumerate(level.orders):
-            if queued_order_id == order_id:
-                sequence_position = position
-                break
-            orders_ahead.append(queued_order_id)
-
-        if sequence_position is None:
-            return None
+        sequence_position = level.orders.index(order_id)
+        orders_ahead = tuple(islice(level.orders, sequence_position))
 
         return QueuePosition(
             order_id=order_id,
             sequence_position=sequence_position,
-            orders_ahead=tuple(orders_ahead),
+            orders_ahead=orders_ahead,
             total_orders_at_level=len(level.orders),
         )
 
