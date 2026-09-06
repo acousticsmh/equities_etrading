@@ -351,7 +351,7 @@ For high-frequency simulation:
 
 ## Testing
 
-See `tests/test_execution.py` for:
+See `test_execution_complete.py` and `test_get_queue_position.py` for:
 - Queue position retrieval (existing, non-existing orders)
 - Passive fill evaluation (eligible fills, position misses)
 - Fill event creation (audit records)

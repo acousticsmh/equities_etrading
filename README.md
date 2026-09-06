@@ -49,9 +49,11 @@ Responsibilities:
 
 This module should not compute trading signals or silently repair questionable market data. Data-quality decisions belong in explicit validation and reporting paths.
 
-See [`research/docs/ingestion.md`](research/docs/ingestion.md) for provider setup, API usage, normalized event fields, raw-data layout, and depth/order-level feed guidance.
+See [`docs/ingestion.md`](docs/ingestion.md) for provider setup, API usage, normalized event fields, raw-data layout, and depth/order-level feed guidance.
 
-See [`research/docs/book.md`](research/docs/book.md) for order-book reconstruction ownership, event lifecycle semantics, replay sequencing, validation, and snapshot behavior.
+See [`docs/book.md`](docs/book.md) for order-book reconstruction ownership, event lifecycle semantics, replay sequencing, validation, and snapshot behavior.
+
+See [`docs/execution.md`](docs/execution.md) for FIFO queue-position fill simulation, execution results, diagnostics, and integration guidance.
 
 ### `research/book/`
 
@@ -135,7 +137,7 @@ Responsibilities:
 
 Backtests should make look-ahead bias, survivorship bias, missing data, and unrealistic fill assumptions visible rather than hiding them behind a headline return.
 
-### `research/docs/`
+### `docs/`
 
 Stores research-specific documentation and experiment records.
 
