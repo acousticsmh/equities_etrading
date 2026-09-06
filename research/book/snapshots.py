@@ -7,15 +7,15 @@ from decimal import Decimal
 @dataclass(frozen=True)
 class BookLevel:
     price: Decimal
-    quantity: int
+    quantity: Decimal
     order_count: int
 
 @dataclass(frozen=True)
 class TopOfBook:
     bid_price: Decimal | None
-    bid_size: int
+    bid_size: Decimal
     ask_price: Decimal | None
-    ask_size: int
+    ask_size: Decimal
 
 
 @dataclass(frozen=True)

@@ -67,19 +67,24 @@ class BookValidator:
         return event.order_id
 
     @staticmethod
-    def quantity(event: BookEvent, name: str) -> int:
+    def quantity(event: BookEvent, name: str) -> Decimal:
         BookValidator._require_positive_quantity(event.quantity, name)
         assert event.quantity is not None
-        return event.quantity
+        return Decimal(str(event.quantity))
 
     @staticmethod
-    def add_values(event: BookEvent) -> tuple[str, Side, Decimal, int]:
+    def add_values(event: BookEvent) -> tuple[str, Side, Decimal, Decimal]:
         BookValidator._validate_add_event(event)
         assert event.order_id is not None
         assert event.side is not None
         assert event.price is not None
         assert event.quantity is not None
-        return event.order_id, event.side, event.price, event.quantity
+        return (
+            event.order_id,
+            event.side,
+            event.price,
+            Decimal(str(event.quantity)),
+        )
 
     @staticmethod
     def _validate_add_event(event: BookEvent) -> None:
@@ -124,7 +129,7 @@ class BookValidator:
             raise ValueError(f"{name} event requires a positive price")
 
     @staticmethod
-    def _require_positive_quantity(quantity: int | None, name: str) -> None:
+    def _require_positive_quantity(quantity: Decimal | None, name: str) -> None:
         if quantity is None or quantity <= 0:
             raise ValueError(f"{name} event requires a positive quantity")
 

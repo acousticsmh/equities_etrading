@@ -14,8 +14,8 @@ class BookOrder:
     symbol: str
     side: Side
     price: Decimal
-    quantity:int
-    remaining_quantity:int
+    quantity: Decimal
+    remaining_quantity: Decimal
     sequence:int
     timestamp:datetime
     venue:str|None = None

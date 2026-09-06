@@ -17,11 +17,14 @@ class PriceLevel:
         self.orders.append(order_id)
     def remove(self, order_id: str) -> None:
         self.orders.remove(order_id)
-    def quantity(self, orders: OrderStore) -> int:
+    def quantity(self, orders: OrderStore) -> Decimal:
         return sum(
-            order.remaining_quantity
-            for order_id in self.orders
-            if (order := orders.get(order_id)) is not None
+            (
+                order.remaining_quantity
+                for order_id in self.orders
+                if (order := orders.get(order_id)) is not None
+            ),
+            Decimal("0"),
         )
 
 

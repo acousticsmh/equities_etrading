@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from decimal import Decimal
 
 from .models import BookOrder
 
@@ -22,5 +23,5 @@ class OrderStore:
     def remove(self, order_id: str) -> BookOrder | None:
         return self._orders.pop(order_id, None)
 
-    def update_quantity(self, order_id: str, quantity: int) -> None:
+    def update_quantity(self, order_id: str, quantity: Decimal) -> None:
         self._orders[order_id].remaining_quantity = quantity

@@ -25,6 +25,6 @@ class BookEvent:
     order_id: str | None
     side: Side | None
     price: Decimal | None
-    quantity: int | None
+    quantity: Decimal | None
     new_price: Decimal | None = None
     venue: str | None = None

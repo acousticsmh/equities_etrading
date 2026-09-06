@@ -226,9 +226,9 @@ class OrderBook:
 
         return TopOfBook(
             bid_price=best_bid_price,
-            bid_size=(best_bid_level.quantity(self.orders) if best_bid_level else 0),
+            bid_size=(best_bid_level.quantity(self.orders) if best_bid_level else Decimal("0")),
             ask_price=best_ask_price,
-            ask_size=(best_ask_level.quantity(self.orders) if best_ask_level else 0),
+            ask_size=(best_ask_level.quantity(self.orders) if best_ask_level else Decimal("0")),
         )
 
     def depth(self, levels: int = 5) -> BookSnapshot:
