@@ -81,88 +81,41 @@ class FillSimulator:
         Returns:
             ExecutionResult with fill type, queue position, and quantity details.
         """
-        # Step 1: Retrieve order from book
-        order = self.book.orders.get(order_id)
         trade_quantity = (
             Decimal(str(trade_event.quantity))
             if trade_event.quantity is not None
             else Decimal("0")
         )
+
+        order = self.book.orders.get(order_id)
         if order is None:
-            return ExecutionResult(
-                trade_symbol=trade_event.symbol,
-                trade_quantity=trade_quantity,
-                order_id=order_id,
-                fill_type=FillType.NO_POSITION,
-                queue_position=None,
-                fill_quantity=Decimal("0"),
-                remaining_quantity=Decimal("0"),
+            return self._no_fill(trade_event, order_id, trade_quantity, Decimal("0"))
+
+        # The order must exist for this symbol, at a known price, resting on the
+        # side opposite the trade, and priced no worse than the trade.
+        if order.symbol != trade_event.symbol or trade_event.price is None:
+            return self._no_fill(
+                trade_event, order_id, trade_quantity, order.remaining_quantity
             )
 
-        # Step 2: Check that symbols match
-        if order.symbol != trade_event.symbol:
-            return ExecutionResult(
-                trade_symbol=trade_event.symbol,
-                trade_quantity=trade_quantity,
-                order_id=order_id,
-                fill_type=FillType.NO_POSITION,
-                queue_position=None,
-                fill_quantity=Decimal("0"),
-                remaining_quantity=order.remaining_quantity,
-            )
-
-        if trade_event.price is None:
-            return ExecutionResult(
-                trade_symbol=trade_event.symbol,
-                trade_quantity=trade_quantity,
-                order_id=order_id,
-                fill_type=FillType.NO_POSITION,
-                queue_position=None,
-                fill_quantity=Decimal("0"),
-                remaining_quantity=order.remaining_quantity,
-            )
-
-        # Step 3: Infer trade direction from event
         trade_side = self._infer_trade_side(trade_event)
-
-        # Step 4: Order can only be passively filled if its side is opposite to trade
         if trade_side is None or order.side == trade_side:
-            return ExecutionResult(
-                trade_symbol=trade_event.symbol,
-                trade_quantity=trade_quantity,
-                order_id=order_id,
-                fill_type=FillType.NO_POSITION,
-                queue_position=None,
-                fill_quantity=Decimal("0"),
-                remaining_quantity=order.remaining_quantity,
+            return self._no_fill(
+                trade_event, order_id, trade_quantity, order.remaining_quantity
             )
 
-        # Step 5: Check if order price is at or better than trade price
         if not self._is_price_acceptable(order.side, order.price, trade_event.price):
-            return ExecutionResult(
-                trade_symbol=trade_event.symbol,
-                trade_quantity=trade_quantity,
-                order_id=order_id,
-                fill_type=FillType.NO_POSITION,
-                queue_position=None,
-                fill_quantity=Decimal("0"),
-                remaining_quantity=order.remaining_quantity,
+            return self._no_fill(
+                trade_event, order_id, trade_quantity, order.remaining_quantity
             )
 
-        # Step 6: Get queue position at the order's price level
         queue_pos = self.get_queue_position(order_id, order.price)
         if queue_pos is None:
-            return ExecutionResult(
-                trade_symbol=trade_event.symbol,
-                trade_quantity=trade_quantity,
-                order_id=order_id,
-                fill_type=FillType.NO_POSITION,
-                queue_position=None,
-                fill_quantity=Decimal("0"),
-                remaining_quantity=order.remaining_quantity,
+            return self._no_fill(
+                trade_event, order_id, trade_quantity, order.remaining_quantity
             )
 
-        # Step 7: Determine fill type based on queue position
+        # A resting order is filled only while it sits at the front of the queue.
         if queue_pos.is_at_front:
             # Passive fill: order is at front of queue
             fill_qty = min(order.remaining_quantity, trade_quantity)
@@ -221,11 +174,30 @@ class FillSimulator:
             sequence=trade_event.sequence,
             event_time=trade_event.event_time,
             queue_position_at_fill=result.queue_position.sequence_position,
+            received_time=trade_event.received_time,
         )
 
     # ─────────────────────────────────────────────────────────────────────────
     # Private helpers
     # ─────────────────────────────────────────────────────────────────────────
+
+    def _no_fill(
+        self,
+        trade_event: BookEvent,
+        order_id: str,
+        trade_quantity: Decimal,
+        remaining_quantity: Decimal,
+    ) -> ExecutionResult:
+        """Build a NO_POSITION result for a trade that cannot fill the order."""
+        return ExecutionResult(
+            trade_symbol=trade_event.symbol,
+            trade_quantity=trade_quantity,
+            order_id=order_id,
+            fill_type=FillType.NO_POSITION,
+            queue_position=None,
+            fill_quantity=Decimal("0"),
+            remaining_quantity=remaining_quantity,
+        )
 
     def _infer_trade_side(self, event: BookEvent) -> Side | None:
         """Infer the aggressor side from an execution event.

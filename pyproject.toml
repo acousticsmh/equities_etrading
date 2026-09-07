@@ -1,3 +1,17 @@
+[project]
+name = "equities-etrading"
+version = "0.1.0"
+description = "Market-microstructure research tooling: order-book reconstruction, features, and fill simulation."
+requires-python = ">=3.11"
+dependencies = [
+    "sortedcontainers>=2.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]

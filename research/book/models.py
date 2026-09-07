@@ -16,6 +16,7 @@ class BookOrder:
     price: Decimal
     quantity: Decimal
     remaining_quantity: Decimal
-    sequence:int
-    timestamp:datetime
-    venue:str|None = None
+    sequence: int
+    timestamp: datetime
+    venue: str | None = None
+    received_time: datetime | None = None

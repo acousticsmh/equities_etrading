@@ -28,3 +28,6 @@ class BookEvent:
     quantity: Decimal | None
     new_price: Decimal | None = None
     venue: str | None = None
+    # Local receipt time, carried through from the ingest layer alongside
+    # exchange event_time and the monotonic sequence number.
+    received_time: datetime | None = None

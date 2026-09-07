@@ -20,6 +20,7 @@ class OrderBook:
         self.validator = BookValidator()
         self.last_sequence: int | None = None
         self.last_event_time: datetime | None = None
+        self.last_received_time: datetime | None = None
 
     def _check_symbol(self, event: BookEvent) -> None:
         if event.symbol != self.symbol:
@@ -39,6 +40,7 @@ class OrderBook:
     def _record_event(self, event: BookEvent) -> None:
         self.last_sequence = event.sequence
         self.last_event_time = event.event_time
+        self.last_received_time = event.received_time
 
     def apply(self, event: BookEvent) -> None:
         if event.event_type is BookEventType.ADD:
@@ -78,9 +80,10 @@ class OrderBook:
                 sequence=event.sequence,
                 timestamp=event.event_time,
                 venue=event.venue,
+                received_time=event.received_time,
             )
         )
-        level.append(order_id)
+        level.append(order_id, quantity)
         self._record_event(event)
 
     def cancel_order(self, event: BookEvent) -> None:
@@ -106,12 +109,14 @@ class OrderBook:
 
         order.remaining_quantity -= quantity
         if order.remaining_quantity == 0:
-            level.remove(order_id)
+            level.remove(order_id, quantity)
             self.orders.remove(order_id)
             if order.side is Side.BUY:
-                self.bids.remove_if_empty(order.price, self.orders)
+                self.bids.remove_if_empty(order.price)
             else:
-                self.asks.remove_if_empty(order.price, self.orders)
+                self.asks.remove_if_empty(order.price)
+        else:
+            level.reduce(quantity)
         self._record_event(event)
 
     def execute_order(self, event: BookEvent) -> None:
@@ -139,12 +144,14 @@ class OrderBook:
 
         order.remaining_quantity -= quantity
         if order.remaining_quantity == 0:
-            level.remove(order_id)
+            level.remove(order_id, quantity)
             self.orders.remove(order_id)
             if order.side is Side.BUY:
-                self.bids.remove_if_empty(order.price, self.orders)
+                self.bids.remove_if_empty(order.price)
             else:
-                self.asks.remove_if_empty(order.price, self.orders)
+                self.asks.remove_if_empty(order.price)
+        else:
+            level.reduce(quantity)
         self._record_event(event)
 
     def modify_order(self, event: BookEvent) -> None:
@@ -162,6 +169,16 @@ class OrderBook:
                 f"remaining quantity {order.remaining_quantity}"
             )
 
+        if order.side is Side.BUY:
+            level = self.bids.get(order.price)
+        elif order.side is Side.SELL:
+            level = self.asks.get(order.price)
+        else:
+            raise ValueError(f"Unknown side: {order.side}")
+        if level is None:
+            raise ValueError(f"Price level not found: {order.price}")
+
+        level.reduce(order.remaining_quantity - quantity)
         order.remaining_quantity = quantity
         self._record_event(event)
 
@@ -190,8 +207,8 @@ class OrderBook:
         if old_level is None:
             raise ValueError(f"Old price level not found: {order.price}")
 
-        old_level.remove(order_id)
-        new_level.append(order_id)
+        old_level.remove(order_id, order.remaining_quantity)
+        new_level.append(order_id, quantity)
         if old_level is not new_level:
             self._remove_empty_level(order)
 
@@ -209,9 +226,9 @@ class OrderBook:
 
     def _remove_empty_level(self, order: BookOrder) -> None:
         if order.side is Side.BUY:
-            self.bids.remove_if_empty(order.price, self.orders)
+            self.bids.remove_if_empty(order.price)
         else:
-            self.asks.remove_if_empty(order.price, self.orders)
+            self.asks.remove_if_empty(order.price)
 
     def top_of_book(self) -> TopOfBook:
         best_bid_price = self.bids.best_price()
@@ -226,9 +243,9 @@ class OrderBook:
 
         return TopOfBook(
             bid_price=best_bid_price,
-            bid_size=(best_bid_level.quantity(self.orders) if best_bid_level else Decimal("0")),
+            bid_size=(best_bid_level.quantity() if best_bid_level else Decimal("0")),
             ask_price=best_ask_price,
-            ask_size=(best_ask_level.quantity(self.orders) if best_ask_level else Decimal("0")),
+            ask_size=(best_ask_level.quantity() if best_ask_level else Decimal("0")),
         )
 
     def depth(self, levels: int = 5) -> BookSnapshot:
@@ -238,7 +255,7 @@ class OrderBook:
         bid_snapshots = tuple(
             BookLevel(
                 price=level.price,
-                quantity=level.quantity(self.orders),
+                quantity=level.quantity(),
                 order_count=len(level.orders),
             )
             for level in bid_levels
@@ -247,7 +264,7 @@ class OrderBook:
         ask_snapshots = tuple(
             BookLevel(
                 price=level.price,
-                quantity=level.quantity(self.orders),
+                quantity=level.quantity(),
                 order_count=len(level.orders),
             )
             for level in ask_levels

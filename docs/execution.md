@@ -230,8 +230,9 @@ class FillEvent:
     fill_quantity: Decimal       # Quantity filled
     remaining_quantity: Decimal  # Remaining after fill
     sequence: int                # Event sequence number
-    event_time: datetime         # Source event timestamp
+    event_time: datetime         # Source event exchange timestamp
     queue_position_at_fill: int  # Queue position when filled
+    received_time: datetime | None  # Local receipt time of the source trade
 ```
 
 ---

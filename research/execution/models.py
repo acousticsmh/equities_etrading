@@ -113,10 +113,13 @@ class FillEvent:
     """Event sequence number from the trade."""
 
     event_time: datetime
-    """Timestamp of the source book event."""
+    """Exchange timestamp of the source book event."""
 
     queue_position_at_fill: int
     """Queue position when fill occurred (0 = front of queue)."""
+
+    received_time: datetime | None = None
+    """Local receipt time of the source trade event, if known."""
 
     def __repr__(self) -> str:
         return (
@@ -127,6 +130,7 @@ class FillEvent:
             f"remaining_quantity={self.remaining_quantity}, "
             f"sequence={self.sequence}, "
             f"event_time={self.event_time}, "
-            f"queue_position_at_fill={self.queue_position_at_fill})"
+            f"queue_position_at_fill={self.queue_position_at_fill}, "
+            f"received_time={self.received_time})"
         )
         

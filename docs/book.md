@@ -37,9 +37,11 @@ BookEvent -> OrderBook -> OrderStore + PriceLadder -> BookSnapshot
 
 `PriceLevel` stores order IDs in arrival order. `OrderStore` stores the full mutable order objects. This separation preserves FIFO queue ordering while allowing executions and cancellations to update remaining quantity in one place.
 
+`PriceLadder` keeps its levels in a `sortedcontainers.SortedDict` keyed by price, so the best price is an O(log n) lookup and a depth walk needs no re-sort. `PriceLevel` maintains its aggregate resting quantity incrementally as orders are appended, removed, or reduced, rather than summing the queue on every read.
+
 ## Event Lifecycle
 
-`OrderBook.apply()` dispatches using `BookEventType` members. Each successful mutation records the event sequence and timestamp.
+`OrderBook.apply()` dispatches using `BookEventType` members. Each successful mutation records the event sequence, the exchange event time, and the local receipt time (`received_time`), which flows through `BookEvent` and `BookOrder` from the ingest layer rather than being collapsed into a single timestamp.
 
 ### Add
 
