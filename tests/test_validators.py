@@ -57,7 +57,7 @@ def test_validate_state_accepts_consistent_book():
 def test_validate_state_rejects_missing_order_reference():
     book = OrderBook("AAPL")
     level = book.bids.get_or_create(Decimal("100.00"))
-    level.append("missing")
+    level.append("missing", Decimal("100"))
 
     with pytest.raises(ValueError, match="missing order"):
         BookValidator().validate_state(book)

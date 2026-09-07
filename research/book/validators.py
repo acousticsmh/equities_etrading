@@ -35,12 +35,12 @@ class BookValidator:
 
         for level in book.bids.levels():
             self._validate_level_membership(book, level, Side.BUY, active_order_ids)
-            if level.quantity(book.orders) <= 0:
+            if level.quantity() <= 0:
                 raise ValueError(f"Bid level {level.price} has no remaining quantity")
 
         for level in book.asks.levels():
             self._validate_level_membership(book, level, Side.SELL, active_order_ids)
-            if level.quantity(book.orders) <= 0:
+            if level.quantity() <= 0:
                 raise ValueError(f"Ask level {level.price} has no remaining quantity")
 
         stored_orders = list(book.orders.values())

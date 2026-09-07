@@ -31,7 +31,7 @@ def test_add_order_registers_order_and_preserves_fifo_queue():
     assert order.remaining_quantity == 300
     assert level is not None
     assert list(level.orders) == ["buy-1"]
-    assert level.quantity(book.orders) == 300
+    assert level.quantity() == 300
 
 
 def test_execute_order_reduces_remaining_quantity_and_removes_filled_order():
@@ -116,7 +116,7 @@ def test_cancel_order_supports_partial_cancellation():
     assert order.remaining_quantity == 200
     level = book.asks.get(Decimal("100.01"))
     assert level is not None
-    assert level.quantity(book.orders) == 200
+    assert level.quantity() == 200
 
 
 def test_depth_returns_ordered_levels_and_aggregated_quantity():
